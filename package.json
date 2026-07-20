@@ -1,0 +1,29 @@
+{
+  "name": "reduc-to",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Repository foundation for Reduc.to, a URL shortening and privacy-aware analytics platform.",
+  "type": "module",
+  "engines": {
+    "node": ">=22.11.0",
+    "npm": ">=10.9.0"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "format": "prettier . --write",
+    "format:check": "prettier . --check",
+    "lint": "eslint .",
+    "typecheck": "npm run typecheck --workspaces",
+    "check": "npm run format:check && npm run lint && npm run typecheck"
+  },
+  "devDependencies": {
+    "@eslint/js": "9.31.0",
+    "eslint": "9.31.0",
+    "prettier": "3.6.2",
+    "typescript": "5.8.3",
+    "typescript-eslint": "8.38.0"
+  }
+}

@@ -1,0 +1,136 @@
+# Reduc.to
+
+Reduc.to is a planned URL shortening and privacy-aware analytics platform. This branch establishes the repository foundation only; authentication, URL shortening, redirects, analytics, the API server, frontend dashboard, and deployment are not implemented yet.
+
+## Current Status
+
+Current phase: Phase 1, Repository Foundation.
+
+This phase creates the TypeScript monorepo structure, foundation tooling, local PostgreSQL and Redis definitions, community files, and setup documentation.
+
+## First-Release Direction
+
+The first release is planned to support registered users who create and manage short links, visitors who open short links, and privacy-aware analytics for link owners. Anonymous link creation and administrator functionality are excluded from the first release.
+
+## Planned Technology Stack
+
+- Monorepo with npm workspaces
+- TypeScript
+- Fastify API in a later phase
+- React and Vite frontend in a later phase
+- PostgreSQL with Prisma in a later phase
+- Redis for caching and rate-limiting support in a later phase
+- ESLint and Prettier for foundation quality checks
+- Docker Compose for local PostgreSQL and Redis
+
+## Repository Structure
+
+```text
+.
+|-- .github/
+|   |-- ISSUE_TEMPLATE/
+|   `-- pull_request_template.md
+|-- apps/
+|   |-- api/
+|   `-- web/
+|-- docs/
+|-- packages/
+|   `-- shared/
+|-- docker-compose.yml
+|-- eslint.config.js
+|-- package.json
+`-- tsconfig.base.json
+```
+
+## Local Prerequisites
+
+- Node.js 22.11.0 or newer
+- npm 10.9.0 or newer
+- Docker with Docker Compose v2
+
+## Foundation Setup
+
+Install dependencies:
+
+```bash
+npm install
+```
+
+Start local PostgreSQL and Redis:
+
+```bash
+docker compose up -d
+```
+
+Stop local infrastructure:
+
+```bash
+docker compose down
+```
+
+Remove local infrastructure volumes when you intentionally want a fresh database and Redis store:
+
+```bash
+docker compose down -v
+```
+
+## Foundation Checks
+
+Format files:
+
+```bash
+npm run format
+```
+
+Check formatting:
+
+```bash
+npm run format:check
+```
+
+Run ESLint:
+
+```bash
+npm run lint
+```
+
+Run TypeScript checks across workspaces:
+
+```bash
+npm run typecheck
+```
+
+Run all foundation checks:
+
+```bash
+npm run check
+```
+
+Validate Docker Compose configuration:
+
+```bash
+docker compose config
+```
+
+## Documentation
+
+- [Product vision](docs/planning/00-product-vision.md)
+- [Product scope](docs/planning/01-product-scope.md)
+- [User flows](docs/planning/02-user-flows.md)
+- [Definition of done](docs/planning/03-definition-of-done.md)
+- [Technical decisions](docs/architecture/00-technical-decisions.md)
+- [Security and privacy principles](docs/security/00-security-and-privacy-principles.md)
+- [Agent instructions](AGENTS.md)
+
+## Development Workflow
+
+1. Read `AGENTS.md` and the relevant planning documents.
+2. Confirm the current phase and approved task.
+3. Keep changes focused.
+4. Run the relevant checks.
+5. Report commands and results accurately.
+6. Do not commit, push, merge, or deploy without explicit approval.
+
+## License
+
+Reduc.to is licensed under the MIT License. See [LICENSE](LICENSE).
