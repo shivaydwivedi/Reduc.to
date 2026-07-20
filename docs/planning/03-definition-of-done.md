@@ -49,6 +49,8 @@ Documentation must remain synchronized with implementation. Architecture decisio
 
 Documents must clearly distinguish approved, planned, deferred, future, and excluded functionality.
 
+Repository-foundation changes should keep setup documentation, workspace scripts, and tooling decisions aligned with the files that actually exist.
+
 ## Manual Verification Requirements
 
 Manual verification steps should be provided when user-visible behavior changes, when automated tests do not fully cover the behavior, or when setup requires human review.

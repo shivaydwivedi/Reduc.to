@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Project planning documents
+    url: https://github.com/shivaydwivedi/Reduc.to/tree/main/docs
+    about: Review approved scope and decisions before proposing broad changes.

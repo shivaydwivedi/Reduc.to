@@ -16,7 +16,9 @@ Consequences: Workspace configuration must be kept understandable and should not
 
 Risks: Premature shared packages can add complexity before clear reuse exists.
 
-Deferred: Exact folder creation and workspace configuration.
+Phase 1 update: The initial workspace structure is `apps/api`, `apps/web`, and `packages/shared`, with shared root tooling and documentation. No `packages/config` workspace exists because there is no current need.
+
+Deferred: Application-specific folder structure inside each workspace.
 
 ## npm Workspaces
 
@@ -32,7 +34,9 @@ Consequences: CI, scripts, and lockfile behavior should align with npm.
 
 Risks: npm may be less strict or less fast than alternatives.
 
-Deferred: Root `package.json`, workspace globs, and script names.
+Phase 1 update: The root `package.json` uses npm workspaces with `apps/*` and `packages/*`, plus foundation scripts for formatting, linting, type checking, and combined checks.
+
+Deferred: Application build, development server, and test scripts.
 
 ## TypeScript
 
@@ -48,7 +52,9 @@ Consequences: Type checking must be part of quality gates once code exists.
 
 Risks: Configuration can sprawl across packages.
 
-Deferred: TypeScript configuration layout.
+Phase 1 update: The repository uses a root `tsconfig.base.json` with strict safety options and per-workspace `tsconfig.json` files. Phase 1 type checking uses `tsc --noEmit`.
+
+Deferred: Project references, emitted build outputs, and application-specific TypeScript options.
 
 ## Fastify
 
@@ -300,8 +306,56 @@ Approved choice: MIT, Copyright (c) 2026 Shivay Dwivedi.
 
 Reasoning: MIT is simple and portfolio-friendly.
 
-Consequences: A `LICENSE` file should be created in an approved future task.
+Consequences: The repository includes a standard MIT `LICENSE` file.
 
 Risks: None significant for the current project direction.
 
-Deferred: Creating the license file.
+Deferred: None for the license file itself.
+
+## Node.js Foundation Version
+
+Status: Approved for Phase 1 foundation.
+
+Context: The repository needs a supported runtime baseline for TypeScript tooling and future Node.js development.
+
+Approved choice: Require Node.js `>=22.11.0` and npm `>=10.9.0`.
+
+Reasoning: Node.js 22 is a modern LTS line suitable for a new TypeScript project and avoids depending on a non-LTS runtime.
+
+Consequences: Contributors should use Node.js 22.11.0 or newer.
+
+Risks: Future hosting platforms must support the selected runtime line.
+
+Deferred: Exact production runtime image and deployment configuration.
+
+## Foundation Formatting and Linting
+
+Status: Approved for Phase 1 foundation.
+
+Context: The monorepo needs consistent formatting and linting before application code begins.
+
+Approved choice: Use Prettier with conventional formatting rules and ESLint flat config with TypeScript ESLint support.
+
+Reasoning: This keeps the initial quality setup understandable and avoids framework-specific linting before frameworks are installed.
+
+Consequences: React-specific, Fastify-specific, and test-specific linting can be added only when those layers are introduced.
+
+Risks: The initial lint rules are intentionally modest and may need tightening as product code appears.
+
+Deferred: Framework-specific rules and test linting.
+
+## Line-Ending Policy
+
+Status: Approved for Phase 1 foundation.
+
+Context: Windows development can produce line-ending churn if the repository policy is implicit.
+
+Approved choice: Normalize text files to LF in Git with `.gitattributes` using `* text=auto eol=lf`.
+
+Reasoning: A clear policy prevents noisy diffs while remaining usable on Windows.
+
+Consequences: Contributors on Windows may see working-tree conversions depending on Git configuration, but committed text stays normalized.
+
+Risks: Windows-specific scripts may need exceptions if introduced later.
+
+Deferred: Script-specific line-ending exceptions.

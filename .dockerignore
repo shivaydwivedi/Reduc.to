@@ -1,0 +1,16 @@
+node_modules
+dist
+build
+coverage
+.git
+.github
+.cache
+.vite
+.next
+.turbo
+.env
+.env.*
+!.env.example
+*.log
+README.md
+docs
