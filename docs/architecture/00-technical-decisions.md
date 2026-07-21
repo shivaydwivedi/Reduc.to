@@ -108,6 +108,8 @@ Risks: Analytics volume and indexing choices require careful design.
 
 Deferred: Prisma schema, migrations, indexes, and retention mechanics.
 
+Phase 4 update: Prisma ORM 7 is installed in the API workspace with the PostgreSQL datasource configured for Prisma CLI through `apps/api/prisma.config.ts`. The generated Prisma Client is emitted into `apps/api/src/generated/prisma`, and application runtime construction uses `@prisma/adapter-pg` with the existing `pg` driver. UUID v7 IDs are generated in application code rather than by PostgreSQL-specific functions.
+
 ## Redis
 
 Status: Approved.

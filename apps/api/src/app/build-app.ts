@@ -1,7 +1,7 @@
 import fastify, { type FastifyInstance } from "fastify";
 
 import type { AppConfig } from "../config/types.js";
-import type { PostgresDependency } from "../infrastructure/postgres/types.js";
+import type { DatabaseDependency } from "../infrastructure/database/types.js";
 import type { RedisDependency } from "../infrastructure/redis/types.js";
 import { registerHealthRoutes } from "../modules/health/health.routes.js";
 import { registerErrorHandler } from "../shared/errors/error-handler.js";
@@ -11,7 +11,7 @@ import { createLoggerOptions } from "../shared/logging/logger-options.js";
 import { registerCorePlugins } from "./register-core-plugins.js";
 
 export type AppDependencies = {
-  postgres: Pick<PostgresDependency, "ping">;
+  postgres: Pick<DatabaseDependency, "ping">;
   redis: Pick<RedisDependency, "ping">;
 };
 

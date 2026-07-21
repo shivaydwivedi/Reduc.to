@@ -1,6 +1,6 @@
 # Data Lifecycle and Retention
 
-Status: Approved design for Phase 2. Implementation has not started.
+Status: Phase 4 database structures are implemented. Cleanup jobs and product behavior have not started.
 
 ## Creation
 
@@ -63,6 +63,12 @@ If aggregation fails, dashboards may show stale totals. Raw events within retent
 ## Data Recovery Implications
 
 Soft-deleted links can be inspected internally if needed, but restore behavior is not part of the first release unless approved. Raw click events cannot be recovered after retention deletion unless backups contain them, and backup retention must be considered in the privacy model later.
+
+## Phase 4 Implementation Notes
+
+- The initial migration preserves restrictive delete behavior so hard deletion cannot accidentally remove owned links, session state, click events, or daily statistics.
+- Link soft deletion is represented by `deletedAt`; no application behavior for deletion or restoration is implemented in this phase.
+- Raw click-event retention remains a future cleanup-job responsibility; no purge job is implemented.
 
 ## Privacy Implications
 

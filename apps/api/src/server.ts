@@ -5,8 +5,8 @@ import { buildApp } from "./app/build-app.js";
 import type { AppDependencies } from "./app/build-app.js";
 import { loadConfig } from "./config/env.js";
 import type { AppConfig } from "./config/types.js";
-import { createPostgresClient } from "./infrastructure/postgres/postgres-client.js";
-import type { PostgresDependency } from "./infrastructure/postgres/types.js";
+import { createDatabaseClient } from "./infrastructure/database/database-client.js";
+import type { DatabaseDependency } from "./infrastructure/database/types.js";
 import { createRedisClient } from "./infrastructure/redis/redis-client.js";
 import type { RedisDependency } from "./infrastructure/redis/types.js";
 
@@ -27,7 +27,7 @@ type SignalTarget = {
 };
 
 type ServerDependencies = {
-  postgres: PostgresDependency;
+  postgres: DatabaseDependency<unknown>;
   redis: RedisDependency<unknown>;
 };
 
@@ -44,7 +44,7 @@ export type BootstrapServerOptions = {
 
 export async function startServer(): Promise<ServerHandle> {
   const config = loadConfig();
-  const postgres = createPostgresClient(config);
+  const postgres = createDatabaseClient(config);
   const redis = createRedisClient(config, {
     reportError(report) {
       process.stderr.write(`${JSON.stringify(report)}\n`);
