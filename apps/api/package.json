@@ -6,14 +6,22 @@
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "lint": "eslint .",
+    "prisma:format": "prisma format --schema prisma/schema.prisma",
+    "prisma:generate": "prisma generate --schema prisma/schema.prisma",
+    "prisma:migrate:deploy": "prisma migrate deploy --config prisma.config.ts",
+    "prisma:migrate:dev": "prisma migrate dev --config prisma.config.ts",
+    "prisma:status": "prisma migrate status --config prisma.config.ts",
+    "prisma:validate": "prisma validate --schema prisma/schema.prisma",
     "start": "tsx src/server.ts",
-    "test": "vitest run --environment node test",
-    "test:watch": "vitest --environment node test",
+    "test": "vitest run --environment node --test-timeout 10000 test",
+    "test:watch": "vitest --environment node --test-timeout 10000 test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@fastify/cors": "11.0.1",
     "@fastify/helmet": "13.0.1",
+    "@prisma/adapter-pg": "7.9.0",
+    "@prisma/client": "7.9.0",
     "fastify": "5.10.0",
     "pg": "8.13.3",
     "redis": "4.7.0",
@@ -22,6 +30,7 @@
   "devDependencies": {
     "@types/node": "24.0.15",
     "@types/pg": "8.11.11",
+    "prisma": "7.9.0",
     "tsx": "4.20.3",
     "vitest": "3.2.7"
   }

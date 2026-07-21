@@ -1,12 +1,12 @@
 # Reduc.to
 
-Reduc.to is a planned URL shortening and privacy-aware analytics platform. This branch establishes the backend API foundation; authentication, URL shortening, public redirects, link management, analytics, the frontend dashboard, and deployment are not implemented yet.
+Reduc.to is a planned URL shortening and privacy-aware analytics platform. This branch establishes the PostgreSQL database foundation; authentication, URL shortening, public redirects, link management, analytics behavior, the frontend dashboard, and deployment are not implemented yet.
 
 ## Current Status
 
-Current phase: Phase 3, Backend Foundation.
+Current phase: Phase 4, Database Foundation.
 
-This phase creates a runnable Fastify API foundation with environment validation, structured logging, request IDs, health/readiness endpoints, consistent errors, injectable PostgreSQL and Redis dependencies, graceful shutdown, and API tests that use fakes instead of live services.
+This phase adds Prisma configuration, the approved PostgreSQL schema, an initial migration SQL file, generated Prisma Client code, application-generated UUID v7 IDs, and schema-focused tests that do not require Docker.
 
 ## First-Release Direction
 
@@ -18,7 +18,7 @@ The first release is planned to support registered users who create and manage s
 - TypeScript
 - Fastify API in a later phase
 - React and Vite frontend in a later phase
-- PostgreSQL with Prisma in a later phase
+- PostgreSQL with Prisma
 - Redis for caching and rate-limiting support in a later phase
 - ESLint and Prettier for foundation quality checks
 - Docker Compose for local PostgreSQL and Redis
@@ -48,7 +48,7 @@ The first release is planned to support registered users who create and manage s
 - npm 10.9.0 or newer
 - Docker with Docker Compose v2
 
-Docker is not currently installed on the owner's machine. PostgreSQL and Redis are defined for local development, but live database/cache readiness has not been verified locally in this phase.
+Docker is not currently installed on the owner's machine. PostgreSQL and Redis are defined for local development, but the Phase 4 migration has not been applied to a live local PostgreSQL database.
 
 ## Foundation Setup
 
@@ -84,6 +84,29 @@ The API exposes:
 - `GET /ready`: dependency readiness using PostgreSQL and Redis checks.
 
 The test suite exercises readiness with fake dependencies; it does not require Docker.
+
+Prisma schema location:
+
+```text
+apps/api/prisma/schema.prisma
+```
+
+Prisma commands that do not require a live PostgreSQL database:
+
+```bash
+npm run prisma:format
+npm run prisma:validate
+npm run prisma:generate
+```
+
+Prisma commands that require a live PostgreSQL database configured by `DATABASE_URL`:
+
+```bash
+npm run prisma:migrate:dev
+npm run prisma:migrate:deploy
+```
+
+The initial migration SQL is present for review but has not been applied locally because Docker/PostgreSQL is unavailable.
 
 Stop local infrastructure:
 

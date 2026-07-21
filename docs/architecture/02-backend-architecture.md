@@ -1,6 +1,6 @@
 # Backend Architecture
 
-Status: Approved design. Phase 3 implements the backend foundation only; product modules have not started.
+Status: Approved design. Phase 4 implements the database foundation; product modules have not started.
 
 ## Modular Monolith Rationale
 
@@ -49,7 +49,7 @@ Repositories must not call handlers. Services must not depend on route framework
 - PostgreSQL and Redis clients.
 - Graceful shutdown for HTTP server, database, Redis, and analytics buffer.
 
-Phase 3 implementation status: environment validation, request IDs, structured logging, core plugins, error mapping, not-found handling, PostgreSQL/Redis client wrappers, health/readiness routes, and graceful shutdown are implemented in `apps/api`. Authentication hooks, CSRF hooks, rate limiting, product modules, and analytics buffer are still deferred.
+Phase 4 implementation status: environment validation, request IDs, structured logging, core plugins, error mapping, not-found handling, health/readiness routes, Redis readiness, Prisma-backed PostgreSQL readiness, generated Prisma Client, initial migration SQL, and graceful shutdown are implemented in `apps/api`. Authentication hooks, CSRF hooks, rate limiting, product modules, repositories, and analytics buffer are still deferred.
 
 ## Request Lifecycle
 
@@ -73,6 +73,8 @@ Cache invalidation should occur only after the database transaction commits.
 ## Repository Responsibilities
 
 Repositories should express named query patterns, not generic database access. They should not perform authorization decisions. They may expose methods such as finding a link by `lookupKey`, listing links by owner, creating refresh sessions and refresh-token records, and inserting click-event batches.
+
+Phase 4 note: repository methods are not implemented yet. Prisma is available as the future data-access foundation through the injectable database dependency.
 
 ## Service Responsibilities
 

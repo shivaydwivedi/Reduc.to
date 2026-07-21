@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { bootstrapServer, formatStartupFailure } from "../src/server.js";
 import type { AppConfig } from "../src/config/types.js";
-import type { PostgresDependency } from "../src/infrastructure/postgres/types.js";
+import type { DatabaseDependency } from "../src/infrastructure/database/types.js";
 import type { RedisDependency } from "../src/infrastructure/redis/types.js";
 import { createTestConfig, neverResolves } from "./helpers.js";
 
@@ -27,7 +27,7 @@ function createLifecycleDependency(
     start?: () => Promise<void>;
     close?: () => Promise<void>;
   } = {}
-): PostgresDependency | RedisDependency {
+): DatabaseDependency | RedisDependency {
   return {
     async start() {
       events.push(`${name}:start`);
@@ -40,13 +40,10 @@ function createLifecycleDependency(
       events.push(`${name}:close`);
       await overrides.close?.();
     },
-    getPool() {
-      return undefined;
-    },
     getClient() {
       return undefined;
     }
-  } as unknown as PostgresDependency | RedisDependency;
+  } as unknown as DatabaseDependency | RedisDependency;
 }
 
 function createApp(events: string[], overrides: { close?: () => Promise<void> } = {}) {
@@ -78,7 +75,7 @@ function createApp(events: string[], overrides: { close?: () => Promise<void> } 
 
 async function startFakeServer(input: {
   config?: AppConfig;
-  postgres?: PostgresDependency;
+  postgres?: DatabaseDependency;
   redis?: RedisDependency;
   app?: ReturnType<typeof createApp>["app"];
   signalTarget?: FakeSignalTarget;
@@ -86,7 +83,7 @@ async function startFakeServer(input: {
   const events: string[] = [];
   const createdApp = input.app ?? createApp(events).app;
   const postgres =
-    input.postgres ?? (createLifecycleDependency("postgres", events) as PostgresDependency);
+    input.postgres ?? (createLifecycleDependency("postgres", events) as DatabaseDependency);
   const redis = input.redis ?? (createLifecycleDependency("redis", events) as RedisDependency);
   const options: Parameters<typeof bootstrapServer>[0] = {
     config: input.config ?? createTestConfig(),
@@ -111,7 +108,7 @@ describe("bootstrapServer", () => {
     await bootstrapServer({
       config: createTestConfig(),
       dependencies: {
-        postgres: createLifecycleDependency("postgres", events) as PostgresDependency,
+        postgres: createLifecycleDependency("postgres", events) as DatabaseDependency,
         redis: createLifecycleDependency("redis", events) as RedisDependency
       },
       createApp: async () => app.app
@@ -129,7 +126,7 @@ describe("bootstrapServer", () => {
         dependencies: {
           postgres: createLifecycleDependency("postgres", events, {
             start: () => Promise.reject(new Error("postgres failed"))
-          }) as PostgresDependency,
+          }) as DatabaseDependency,
           redis: createLifecycleDependency("redis", events) as RedisDependency
         },
         createApp: async () => createApp(events).app
@@ -146,7 +143,7 @@ describe("bootstrapServer", () => {
       bootstrapServer({
         config: createTestConfig(),
         dependencies: {
-          postgres: createLifecycleDependency("postgres", events) as PostgresDependency,
+          postgres: createLifecycleDependency("postgres", events) as DatabaseDependency,
           redis: createLifecycleDependency("redis", events, {
             start: () => Promise.reject(new Error("redis failed"))
           }) as RedisDependency
@@ -179,7 +176,7 @@ describe("bootstrapServer", () => {
     const server = await bootstrapServer({
       config: createTestConfig(),
       dependencies: {
-        postgres: createLifecycleDependency("postgres", events) as PostgresDependency,
+        postgres: createLifecycleDependency("postgres", events) as DatabaseDependency,
         redis: createLifecycleDependency("redis", events, {
           close: () => Promise.reject(new Error("redis close failed"))
         }) as RedisDependency
@@ -235,7 +232,7 @@ describe("bootstrapServer", () => {
     const server = await bootstrapServer({
       config: createTestConfig({ shutdownTimeoutMs: 5 }),
       dependencies: {
-        postgres: createLifecycleDependency("postgres", events) as PostgresDependency,
+        postgres: createLifecycleDependency("postgres", events) as DatabaseDependency,
         redis: createLifecycleDependency("redis", events) as RedisDependency
       },
       createApp: async () => app.app

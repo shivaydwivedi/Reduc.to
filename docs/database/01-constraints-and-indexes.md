@@ -1,6 +1,6 @@
 # Constraints and Indexes
 
-Status: Approved design for Phase 2. Implementation has not started. This is not migration code.
+Status: Phase 4 implemented in `apps/api/prisma/schema.prisma` and `apps/api/prisma/migrations/20260721181500_initial_database_foundation/migration.sql`. The migration SQL has not been applied to a live PostgreSQL database locally.
 
 ## Primary Keys
 
@@ -23,6 +23,8 @@ All core entities use UUID v7 primary keys:
 - `DailyLinkStatistic.linkId` references `Link.id`.
 
 Deletes should be restrictive or soft at the application level. Hard cascade deletion is deferred until account deletion policy is approved.
+
+Phase 4 implementation: relation foreign keys use `ON DELETE RESTRICT`; the refresh-token self-reference uses `ON DELETE NO ACTION`.
 
 ## Unique Constraints
 
@@ -47,6 +49,8 @@ Recommended constraints:
 - `RefreshToken.expiresAt > RefreshToken.issuedAt`.
 - `RefreshToken.consumedAt` is null or greater than or equal to `RefreshToken.issuedAt`.
 - `RefreshToken.revokedAt` is null or greater than or equal to `RefreshToken.issuedAt`.
+
+Phase 4 implementation: these checks are added directly in the migration SQL because Prisma schema does not express PostgreSQL check constraints.
 
 Regex-like constraints for alias rules may be enforced in application validation and optionally repeated in PostgreSQL where maintainable.
 
@@ -97,3 +101,8 @@ Indexes speed dashboard and analytics reads but slow writes. The first implement
 - Geolocation indexes.
 - Admin reporting indexes.
 - Account-deletion cascade support indexes.
+
+## Phase 4 Intentional Omissions
+
+- A partial active-links index is not included in the initial migration because the implemented composite owner/status indexes support the approved query patterns without adding a Prisma-untracked partial index yet.
+- Alias regex validation is intentionally deferred to application validation in the later link phase.

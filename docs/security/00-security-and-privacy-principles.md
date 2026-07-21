@@ -89,6 +89,8 @@ Analytics failures during redirects should be logged with safe diagnostic contex
 
 Phase 3 implements Fastify/Pino structured logging with redaction for authorization headers, cookie headers, set-cookie headers, database URLs, Redis URLs, and password/token-like fields. Request bodies are not logged by default.
 
+Phase 4 adds a small database error-classification boundary for Prisma/database errors. It classifies likely uniqueness, foreign-key, record-not-found, and dependency-unavailable cases without exposing SQL, table names, constraint names, connection strings, or low-level Prisma messages to clients.
+
 ## Analytics Privacy
 
 Analytics should be useful without collecting unnecessary personal information. Raw IP addresses must not be stored. Complete user-agent strings should not be retained long term unless technically justified.
@@ -112,6 +114,8 @@ The product should collect only data needed for approved functionality. Geolocat
 Raw click-event target retention is 90 days. Daily aggregate statistics may be retained indefinitely.
 
 Retention enforcement mechanics are deferred to later architecture and implementation phases.
+
+Phase 4 implements database columns and constraints for minimized analytics storage. It does not implement analytics collection, visitor hashing, aggregation jobs, or retention cleanup.
 
 ## Dependency Security
 

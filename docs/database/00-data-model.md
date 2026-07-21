@@ -1,6 +1,6 @@
 # Data Model
 
-Status: Approved design for Phase 2. Implementation has not started. This is not a Prisma schema.
+Status: Phase 4 implemented as a Prisma schema and initial PostgreSQL migration SQL. No live PostgreSQL migration has been applied locally.
 
 ## ID Strategy
 
@@ -14,7 +14,7 @@ Reasoning:
 - TypeScript and Prisma can represent UUIDs as strings.
 - Operational complexity is lower than custom ID formats.
 
-Exact UUID generation location is deferred.
+Phase 4 implementation: UUID v7 values are generated in application code at `apps/api/src/shared/ids/uuid-v7.ts`. The Prisma schema stores IDs as PostgreSQL `uuid` columns without database defaults, so creation code must supply IDs.
 
 ## Relationship Diagram
 
@@ -58,6 +58,8 @@ Check constraints:
 
 - `role` is one of approved role values.
 - Email is non-empty after normalization.
+
+Phase 4 implementation: the enum and unique email are represented in Prisma; the non-empty email check is added in migration SQL.
 
 Soft deletion: Deferred. Users are retained unless a future account-deletion policy is approved.
 
@@ -111,6 +113,8 @@ Check constraints:
 - `redirectType` is `TEMPORARY_302` or `PERMANENT_301`.
 - `expiresAt` is null or later than `createdAt`.
 
+Phase 4 implementation: enum/default/unique constraints are represented in Prisma; lowercase, non-empty, and expiration checks are added in migration SQL.
+
 Soft deletion:
 
 - Set `deletedAt`.
@@ -148,12 +152,14 @@ Relationships:
 - Belongs to `User`.
 - Has many `RefreshToken`.
 
-Unique constraints: None beyond primary key unless implementation chooses to make `familyId` unique.
+Unique constraints: None beyond primary key.
 
 Check constraints:
 
 - `expiresAt` is later than `createdAt`.
 - `revokedAt` is null or later than or equal to `createdAt`.
+
+Phase 4 implementation: lifecycle checks are added in migration SQL. `familyId` is not unique because the approved design did not require it.
 
 Soft deletion: Not used; sessions are expired or revoked, then cleaned up after a buffer.
 
@@ -187,6 +193,8 @@ Unique constraints:
 
 - Unique `tokenHash`.
 - `replacedByTokenId` should not point to more than one predecessor.
+
+Phase 4 implementation: `tokenHash` is unique, and `replacedByTokenId` is unique to prevent multiple predecessors pointing at the same successor.
 
 Check constraints:
 
@@ -263,6 +271,8 @@ Unique constraints:
 Check constraints:
 
 - Counts are greater than or equal to zero.
+
+Phase 4 implementation: the `(linkId, date)` uniqueness is represented in Prisma; non-negative count checks are added in migration SQL.
 
 Soft deletion: Not used.
 

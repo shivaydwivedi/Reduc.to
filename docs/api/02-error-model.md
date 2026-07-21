@@ -99,6 +99,8 @@ Use safe codes such as:
 
 Do not expose connection strings, stack traces, SQL, Redis keys containing user data, or secret names in production responses.
 
+Phase 4 implementation status: database error classification exists for uniqueness conflicts, foreign-key conflicts, record-not-found cases, dependency unavailability, and unknown database errors. These classifications are internal foundations only; feature-specific API errors such as `EMAIL_ALREADY_EXISTS` and `ALIAS_UNAVAILABLE` are still deferred until their modules exist.
+
 ## Request IDs
 
 Every error includes `requestId`. Logs should include the same ID for troubleshooting.
