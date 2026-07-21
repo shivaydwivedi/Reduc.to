@@ -23,11 +23,11 @@ Deferred details include exact cookie names, CSRF implementation, token claims, 
 
 Registered users may create links with generated short codes or custom aliases.
 
-Generated codes are planned as 7-character Base62 values using:
+Generated codes are planned as 7-character lowercase Base36 values using:
 
-`0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`
+`0123456789abcdefghijklmnopqrstuvwxyz`
 
-Generated codes are case-sensitive, must use cryptographically secure randomness in implementation, must be unique at the PostgreSQL level, and must use bounded collision retries.
+Generated keys contain lowercase ASCII letters and digits only, must use cryptographically secure randomness in implementation, must be unique at the PostgreSQL level through the canonical lookup namespace, and must use bounded collision retries. Seven lowercase Base36 characters provide 36^7 = 78,364,164,096 possibilities.
 
 Custom aliases are case-insensitive and normalized to lowercase. They must be 3 to 40 characters, use lowercase letters, digits, hyphens, and underscores, begin and end with a letter or digit, trim leading and trailing whitespace before validation, avoid reserved aliases, and remain immutable after creation in the first release.
 

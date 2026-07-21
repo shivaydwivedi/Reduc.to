@@ -70,7 +70,9 @@ Consequences: Route handlers should remain focused and should delegate business 
 
 Risks: Plugin usage must not obscure security or redirect behavior.
 
-Deferred: API structure, plugin selection, and error response format.
+Phase 2 update: The backend is designed as a modular monolith with auth, users, links, redirects, analytics, health, and shared infrastructure modules. Application APIs use `/api/v1`, public redirects use `/:key`, and operational probes use `/health` and `/ready`.
+
+Deferred: Plugin selection and implementation folder creation.
 
 ## React and Vite
 
@@ -118,7 +120,9 @@ Consequences: Link updates must invalidate relevant cache entries.
 
 Risks: Redis outages must not make the system fail unsafely.
 
-Deferred: Cache keys, TTLs, fallback behavior, and rate-limit design.
+Phase 2 update: Redirect caching uses cache-aside Redis keys shaped as `redirect:v1:{lookupKey}`. Redis failure falls back to PostgreSQL for redirects. Negative caching is excluded initially.
+
+Deferred: Exact TTL values and numeric rate limits.
 
 ## Authentication Direction
 
@@ -134,7 +138,9 @@ Consequences: Refresh-token rotation, reuse detection, storage hashing, and revo
 
 Risks: Token rotation bugs can create security or usability issues.
 
-Deferred: Claims, signing keys, rotation schema, revocation behavior, and session endpoints.
+Phase 2 update: Access tokens target 15 minutes. Refresh tokens target 7 days. `RefreshSession` stores session/family state, while each issued `RefreshToken` stores its own hash and rotation-chain state. Reuse detection revokes the associated session family.
+
+Deferred: Exact signing secrets, cookie names, hashing parameters, and Prisma-level locking or compare-and-swap implementation details.
 
 ## Cookie-Based Token Delivery
 
@@ -150,7 +156,9 @@ Consequences: CSRF protection must be deliberately designed.
 
 Risks: Incorrect SameSite, Secure, domain, or CSRF choices can weaken security or break deployment.
 
-Deferred: Cookie names, attributes, CSRF strategy, and cross-origin deployment behavior.
+Phase 2 update: CSRF design uses a combination of SameSite cookies where compatible, strict Origin checks for unsafe methods, and a double-submit CSRF token. SameSite alone is not treated as sufficient.
+
+Deferred: Exact cookie names, attributes, and token binding details.
 
 ## Redirect Default
 
@@ -166,23 +174,27 @@ Consequences: Users may eventually select 301 or 302 per link.
 
 Risks: Permanent redirect support needs careful warnings and cache expectations.
 
-Deferred: Per-link redirect-type UI and API details.
+Phase 2 update: Redirect type is represented conceptually as `TEMPORARY_302` or `PERMANENT_301`, with 302 as the default.
 
-## Base62 Generated Codes
+Deferred: UI warnings and endpoint-level exposure for 301 selection.
+
+## Lowercase Base36 Generated Keys
 
 Status: Approved.
 
 Context: Generated short links need compact unique codes.
 
-Approved choice: Use 7-character Base62 generated codes with alphabet `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz`.
+Approved choice: Use 7-character lowercase Base36 generated keys with alphabet `0123456789abcdefghijklmnopqrstuvwxyz`.
 
-Reasoning: Base62 is URL-friendly and compact.
+Reasoning: Lowercase Base36 is URL-friendly, avoids mixed-case routing ambiguity, and provides 36^7 = 78,364,164,096 possible generated keys.
 
-Consequences: Generated codes are case-sensitive and require database-level uniqueness with bounded collision retries.
+Consequences: Generated keys contain lowercase ASCII letters and digits only. They require database-level uniqueness through the canonical `lookupKey` namespace and bounded collision retries.
 
 Risks: Collision handling must be correct as volume grows.
 
-Deferred: Retry limit, generation implementation, and reserved-code interactions.
+Phase 2 update: Generated and custom keys share one canonical lowercase `lookupKey` namespace. In the first release, `displayKey` and `lookupKey` normally contain the same value; `displayKey` remains as a presentation boundary.
+
+Deferred: Exact generator retry limit.
 
 ## Alias Normalization
 
@@ -196,9 +208,11 @@ Reasoning: Normalization avoids confusing duplicates and keeps URLs readable.
 
 Consequences: Alias uniqueness should be enforced on normalized values.
 
-Risks: Generated case-sensitive codes and custom case-insensitive aliases must be resolved without ambiguity.
+Risks: Generated keys and custom aliases must continue to share one canonical namespace without ambiguity.
 
-Deferred: Reserved alias list and exact conflict-resolution rules between generated codes and aliases.
+Phase 2 update: `Link.lookupKey` is the single unique public namespace across generated codes and aliases, including soft-deleted links. Deleted keys are not reused in the first release.
+
+Deferred: Reserved alias list.
 
 ## Registered-User-Only Link Creation
 
@@ -230,7 +244,9 @@ Consequences: Analytics failures should not unnecessarily block valid redirects.
 
 Risks: Non-durable deferred handling may lose some events during failures.
 
-Deferred: Exact mechanics for persistence, retries, aggregation, and future durable queue migration.
+Phase 2 update: First-release analytics persistence uses a bounded FIFO in-process buffer with batch database writes, drop-new-arrival behavior when full, observed counters/warnings, graceful shutdown drain, and documented crash-loss limitations. Each API instance owns an independent buffer.
+
+Deferred: Exact queue size, batch size, retry count, and metrics implementation.
 
 ## Exclusion of Initial Geolocation
 
@@ -262,7 +278,9 @@ Consequences: Reporting must account for raw-event retention boundaries.
 
 Risks: Users may expect detailed historical event views beyond 90 days.
 
-Deferred: Purge jobs, aggregate schema, and retention enforcement.
+Phase 2 update: `DailyLinkStatistic` stores compact UTC daily totals per link. Raw click events are retained for 90 days; daily aggregates are retained indefinitely.
+
+Deferred: Cleanup job implementation and aggregate rebuild mechanics.
 
 ## No Raw IP Storage
 
@@ -278,7 +296,9 @@ Consequences: Approximate uniqueness may use HMAC with a server-side secret and 
 
 Risks: Unique visitor counts will be approximate and must be described that way.
 
-Deferred: Exact visitor-hash inputs, secret rotation, and user-agent minimization rules.
+Phase 2 update: Approximate unique visitors use a scoped daily HMAC design with link ID, normalized source network representation, limited user-agent classification, and UTC date bucket. Raw source inputs are not stored.
+
+Deferred: Exact HMAC secret rotation and source-network normalization implementation.
 
 ## Separate Frontend and API Deployment
 

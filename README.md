@@ -1,12 +1,12 @@
 # Reduc.to
 
-Reduc.to is a planned URL shortening and privacy-aware analytics platform. This branch establishes the repository foundation only; authentication, URL shortening, redirects, analytics, the API server, frontend dashboard, and deployment are not implemented yet.
+Reduc.to is a planned URL shortening and privacy-aware analytics platform. This branch establishes architecture and database design documentation; authentication, URL shortening, redirects, analytics, the API server, frontend dashboard, and deployment are not implemented yet.
 
 ## Current Status
 
-Current phase: Phase 1, Repository Foundation.
+Current phase: Phase 2, Architecture and Database Design.
 
-This phase creates the TypeScript monorepo structure, foundation tooling, local PostgreSQL and Redis definitions, community files, and setup documentation.
+This phase creates the technical blueprint for the future API, authentication, redirects, caching, analytics, database model, and API conventions.
 
 ## First-Release Direction
 
@@ -119,6 +119,17 @@ docker compose config
 - [User flows](docs/planning/02-user-flows.md)
 - [Definition of done](docs/planning/03-definition-of-done.md)
 - [Technical decisions](docs/architecture/00-technical-decisions.md)
+- [System overview](docs/architecture/01-system-overview.md)
+- [Backend architecture](docs/architecture/02-backend-architecture.md)
+- [Authentication and session design](docs/architecture/03-authentication-and-session-design.md)
+- [Redirect and cache design](docs/architecture/04-redirect-and-cache-design.md)
+- [Analytics architecture](docs/architecture/05-analytics-architecture.md)
+- [Data model](docs/database/00-data-model.md)
+- [Constraints and indexes](docs/database/01-constraints-and-indexes.md)
+- [Data lifecycle and retention](docs/database/02-data-lifecycle-and-retention.md)
+- [API conventions](docs/api/00-api-conventions.md)
+- [Endpoint catalog](docs/api/01-endpoint-catalog.md)
+- [Error model](docs/api/02-error-model.md)
 - [Security and privacy principles](docs/security/00-security-and-privacy-principles.md)
 - [Agent instructions](AGENTS.md)
 

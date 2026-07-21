@@ -21,7 +21,7 @@ Implementation should consider credential attacks, token theft, CSRF, authorizat
 
 The approved direction is short-lived JWT access tokens and rotating refresh tokens. Access tokens target an approximately 15-minute lifetime. Refresh tokens target an approximately 7-day lifetime and will eventually be stored as hashes in PostgreSQL.
 
-Token rotation, reuse detection, revocation, signing keys, and session invalidation remain deferred architecture details.
+Phase 2 architecture defines refresh sessions separately from issued refresh tokens. Each issued refresh token has its own hashed `RefreshToken` record. Rotation transactionally consumes the current token and creates a successor. Reuse detection revokes the associated session family. Exact signing keys, hashing parameters, and database locking or compare-and-swap implementation remain deferred.
 
 ## Authorization and Ownership Rules
 
@@ -39,7 +39,7 @@ Cookie attributes must be deliberately designed for the final deployment shape, 
 
 Because authentication uses cookies, CSRF protection must be designed before authentication implementation is considered complete.
 
-The exact CSRF strategy is deferred. Candidate approaches may include SameSite constraints, CSRF tokens, origin checks, or a combination appropriate to the separate frontend/API deployment model.
+Phase 2 architecture selects a combination approach: SameSite cookies where compatible, strict Origin checks for unsafe methods, and a double-submit CSRF token. SameSite alone must not be treated as sufficient for the separate frontend/API deployment model.
 
 ## Input-Validation Principles
 
@@ -51,7 +51,7 @@ Validation errors should be consistent and should not leak sensitive implementat
 
 Destination URLs must be validated before link creation or update. The implementation should reject unsupported schemes and should consider protections against unsafe internal-network destinations where applicable.
 
-Exact URL validation rules are deferred to architecture design.
+Phase 2 architecture requires `http` and `https` only, rejects embedded credentials and malformed hostnames, and blocks localhost, loopback, private ranges, link-local ranges, and metadata service addresses where detectable. URL validation reduces abuse risk but cannot prove a destination is safe.
 
 ## Open-Redirect Considerations
 
@@ -99,7 +99,7 @@ Approximate unique visitors may eventually use an HMAC created with a server-sid
 
 Unique visitor metrics must always be described as approximate, not exact identity.
 
-Exact inputs, hash rotation, and retention rules are deferred.
+Phase 2 architecture uses a scoped daily HMAC design with link identifier, normalized source network representation, limited user-agent classification, and UTC date bucket. Exact secret rotation remains deferred.
 
 ## Data Minimization
 
@@ -136,7 +136,7 @@ Security review is required before declaring the following areas complete:
 ## Explicitly Deferred Security Decisions
 
 - Exact JWT claims and signing configuration.
-- Refresh-token schema and rotation behavior.
+- Refresh-token hashing parameters and atomic rotation implementation details.
 - CSRF strategy.
 - Cookie names and attributes.
 - Destination URL allow and deny rules.

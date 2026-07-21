@@ -79,7 +79,7 @@ Main flow:
 
 1. User submits a destination URL and optional metadata.
 2. System validates ownership context and destination URL.
-3. System generates a 7-character Base62 code using approved rules.
+3. System generates a 7-character lowercase Base36 key using approved rules.
 4. System persists the link with database-level uniqueness.
 5. System returns the short URL.
 
