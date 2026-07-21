@@ -1,6 +1,6 @@
 # API Conventions
 
-Status: Approved design for Phase 2. Implementation has not started.
+Status: Approved design. Phase 3 implements only foundation endpoints and error/request conventions.
 
 ## Base Path
 
@@ -12,6 +12,8 @@ Operational endpoints use:
 
 - `/health` for process liveness.
 - `/ready` for dependency readiness.
+
+Phase 3 implementation status: `/health` and `/ready` are implemented. Application APIs under `/api/v1` and the public redirect route are not implemented yet.
 
 ## JSON Conventions
 
@@ -46,6 +48,8 @@ Unsafe authenticated methods require CSRF protection using Origin checks and a d
 ## Request IDs
 
 Every request receives a request ID. Error responses include `requestId`. The API should accept a safe incoming request ID header only if it passes validation; otherwise it generates one.
+
+Phase 3 implementation status: the request ID header is `x-request-id`. Incoming values must be 8 to 64 characters and contain only ASCII letters, digits, underscores, or hyphens. Invalid values are replaced. The response includes `x-request-id`.
 
 ## Idempotency Direction
 

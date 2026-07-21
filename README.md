@@ -1,12 +1,12 @@
 # Reduc.to
 
-Reduc.to is a planned URL shortening and privacy-aware analytics platform. This branch establishes architecture and database design documentation; authentication, URL shortening, redirects, analytics, the API server, frontend dashboard, and deployment are not implemented yet.
+Reduc.to is a planned URL shortening and privacy-aware analytics platform. This branch establishes the backend API foundation; authentication, URL shortening, public redirects, link management, analytics, the frontend dashboard, and deployment are not implemented yet.
 
 ## Current Status
 
-Current phase: Phase 2, Architecture and Database Design.
+Current phase: Phase 3, Backend Foundation.
 
-This phase creates the technical blueprint for the future API, authentication, redirects, caching, analytics, database model, and API conventions.
+This phase creates a runnable Fastify API foundation with environment validation, structured logging, request IDs, health/readiness endpoints, consistent errors, injectable PostgreSQL and Redis dependencies, graceful shutdown, and API tests that use fakes instead of live services.
 
 ## First-Release Direction
 
@@ -48,6 +48,8 @@ The first release is planned to support registered users who create and manage s
 - npm 10.9.0 or newer
 - Docker with Docker Compose v2
 
+Docker is not currently installed on the owner's machine. PostgreSQL and Redis are defined for local development, but live database/cache readiness has not been verified locally in this phase.
+
 ## Foundation Setup
 
 Install dependencies:
@@ -61,6 +63,27 @@ Start local PostgreSQL and Redis:
 ```bash
 docker compose up -d
 ```
+
+Create a local `.env` from `.env.example` only when running the API locally. Do not commit `.env`.
+
+Run the API in development mode:
+
+```bash
+npm run dev:api
+```
+
+Run API tests:
+
+```bash
+npm run test:api
+```
+
+The API exposes:
+
+- `GET /health`: process liveness only.
+- `GET /ready`: dependency readiness using PostgreSQL and Redis checks.
+
+The test suite exercises readiness with fake dependencies; it does not require Docker.
 
 Stop local infrastructure:
 
