@@ -2,6 +2,7 @@ import type { FastifyInstance } from "fastify";
 
 import { buildApp, type AppDependencies } from "../src/app/build-app.js";
 import type { AppConfig } from "../src/config/types.js";
+import { createFakePrismaClient } from "./mvp/fake-prisma.js";
 
 export function createTestConfig(overrides: Partial<AppConfig> = {}): AppConfig {
   return Object.freeze({
@@ -14,6 +15,14 @@ export function createTestConfig(overrides: Partial<AppConfig> = {}): AppConfig 
     corsOrigins: Object.freeze(["http://localhost:5173"]),
     readinessTimeoutMs: 25,
     shutdownTimeoutMs: 100,
+    accessTokenSecret: "test-access-token-secret-at-least-thirty-two-characters",
+    refreshTokenSecret: "test-refresh-token-secret-at-least-thirty-two-characters",
+    accessTokenTtlMinutes: 15,
+    refreshTokenTtlDays: 7,
+    cookieSecure: false,
+    cookieSameSite: "lax",
+    publicBaseUrl: "http://localhost:3000",
+    frontendUrl: "http://localhost:5173",
     ...overrides
   });
 }
@@ -22,11 +31,14 @@ export function createFakeDependencies(
   input: {
     postgres?: () => Promise<void>;
     redis?: () => Promise<void>;
+    database?: ReturnType<typeof createFakePrismaClient>;
   } = {}
 ): AppDependencies {
+  const database = input.database ?? createFakePrismaClient();
   return {
     postgres: {
-      ping: input.postgres ?? (() => Promise.resolve())
+      ping: input.postgres ?? (() => Promise.resolve()),
+      getClient: () => database
     },
     redis: {
       ping: input.redis ?? (() => Promise.resolve())

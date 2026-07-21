@@ -24,7 +24,8 @@ describe("loadConfig", () => {
       logLevel: "debug",
       databaseUrl: validEnv.DATABASE_URL,
       redisUrl: validEnv.REDIS_URL,
-      corsOrigins: ["http://localhost:5173", "http://127.0.0.1:5173"]
+      corsOrigins: ["http://localhost:5173", "http://127.0.0.1:5173"],
+      cookieSameSite: "lax"
     });
     expect(Object.isFrozen(config)).toBe(true);
   });
@@ -92,5 +93,30 @@ describe("loadConfig", () => {
         CORS_ORIGINS: ""
       })
     ).toThrow(ZodError);
+  });
+
+  it("accepts SameSite none only when secure cookies are enabled", () => {
+    const config = loadConfig({
+      ...validEnv,
+      COOKIE_SECURE: "true",
+      COOKIE_SAME_SITE: "none"
+    });
+
+    expect(config.cookieSecure).toBe(true);
+    expect(config.cookieSameSite).toBe("none");
+  });
+
+  it("rejects SameSite none when secure cookies are disabled", () => {
+    expect(() =>
+      loadConfig({
+        ...validEnv,
+        COOKIE_SECURE: "false",
+        COOKIE_SAME_SITE: "none"
+      })
+    ).toThrow(ZodError);
+  });
+
+  it("rejects invalid SameSite values", () => {
+    expect(() => loadConfig({ ...validEnv, COOKIE_SAME_SITE: "strict" })).toThrow(ZodError);
   });
 });
