@@ -1,15 +1,15 @@
 # Endpoint Catalog
 
-Status: Planned; not implemented.
+Status: Phase 3 implements operational endpoints only. Product endpoints are planned; not implemented.
 
 This catalog defines planned endpoints only. It does not define full JSON schemas.
 
 ## Operational
 
-| Method | Path      | Auth | Purpose              | Inputs | Response          | Important errors         | Rate limit  |
-| ------ | --------- | ---- | -------------------- | ------ | ----------------- | ------------------------ | ----------- |
-| GET    | `/health` | No   | Liveness check       | none   | status            | `INTERNAL_ERROR`         | operational |
-| GET    | `/ready`  | No   | Dependency readiness | none   | dependency status | `DEPENDENCY_UNAVAILABLE` | operational |
+| Method | Path      | Auth | Purpose              | Inputs | Response          | Important errors                | Rate limit  |
+| ------ | --------- | ---- | -------------------- | ------ | ----------------- | ------------------------------- | ----------- |
+| GET    | `/health` | No   | Liveness check       | none   | status            | `INTERNAL_ERROR`                | operational |
+| GET    | `/ready`  | No   | Dependency readiness | none   | dependency status | dependency unavailable response | operational |
 
 ## Auth
 

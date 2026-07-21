@@ -87,6 +87,8 @@ Logs should be structured and useful for debugging without exposing credentials,
 
 Analytics failures during redirects should be logged with safe diagnostic context.
 
+Phase 3 implements Fastify/Pino structured logging with redaction for authorization headers, cookie headers, set-cookie headers, database URLs, Redis URLs, and password/token-like fields. Request bodies are not logged by default.
+
 ## Analytics Privacy
 
 Analytics should be useful without collecting unnecessary personal information. Raw IP addresses must not be stored. Complete user-agent strings should not be retained long term unless technically justified.

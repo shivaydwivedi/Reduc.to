@@ -1,6 +1,6 @@
 # Error Model
 
-Status: Approved design for Phase 2. Implementation has not started.
+Status: Approved design. Phase 3 implements the foundation error envelope, validation mapping, unknown-error mapping, and not-found handling.
 
 ## Error Envelope
 
@@ -122,3 +122,7 @@ Production responses contain safe messages only. Development may include additio
 ## Public Redirect Error Handling
 
 Public redirect errors must not expose owner identity, destination URL for disabled/deleted links, or internal state. Missing, disabled, expired, and deleted links may use public-safe messages. API JSON envelope is preferred for API routes; public redirect may return HTML or JSON based on client negotiation.
+
+## Foundation Not-Found Handling
+
+Phase 3 returns `ROUTE_NOT_FOUND` with HTTP 404 for unknown routes. The public redirect route `/:key` is not implemented yet, so unknown public paths also receive the foundation not-found envelope until the redirect phase replaces that behavior deliberately.

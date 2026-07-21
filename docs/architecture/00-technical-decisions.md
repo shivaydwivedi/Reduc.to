@@ -74,6 +74,8 @@ Phase 2 update: The backend is designed as a modular monolith with auth, users, 
 
 Deferred: Plugin selection and implementation folder creation.
 
+Phase 3 update: The API foundation implements reusable Fastify app construction, startup, request IDs, structured logging, error handling, not-found handling, `/health`, `/ready`, injectable PostgreSQL and Redis clients, and graceful shutdown. Product modules remain unimplemented.
+
 ## React and Vite
 
 Status: Approved.
@@ -123,6 +125,8 @@ Risks: Redis outages must not make the system fail unsafely.
 Phase 2 update: Redirect caching uses cache-aside Redis keys shaped as `redirect:v1:{lookupKey}`. Redis failure falls back to PostgreSQL for redirects. Negative caching is excluded initially.
 
 Deferred: Exact TTL values and numeric rate limits.
+
+Phase 3 update: PostgreSQL and Redis client abstractions exist for startup, readiness pings, and shutdown only. No redirect caching or rate limiting is implemented yet.
 
 ## Authentication Direction
 

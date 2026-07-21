@@ -1,4 +1,2 @@
-export const apiWorkspace = {
-  name: "@reduc-to/api",
-  phase: "repository-foundation"
-} as const;
+export { buildApp } from "./app/build-app.js";
+export { loadConfig } from "./config/env.js";

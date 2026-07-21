@@ -1,6 +1,6 @@
 # Backend Architecture
 
-Status: Approved design for Phase 2. Implementation has not started.
+Status: Approved design. Phase 3 implements the backend foundation only; product modules have not started.
 
 ## Modular Monolith Rationale
 
@@ -48,6 +48,8 @@ Repositories must not call handlers. Services must not depend on route framework
 - Error mapping.
 - PostgreSQL and Redis clients.
 - Graceful shutdown for HTTP server, database, Redis, and analytics buffer.
+
+Phase 3 implementation status: environment validation, request IDs, structured logging, core plugins, error mapping, not-found handling, PostgreSQL/Redis client wrappers, health/readiness routes, and graceful shutdown are implemented in `apps/api`. Authentication hooks, CSRF hooks, rate limiting, product modules, and analytics buffer are still deferred.
 
 ## Request Lifecycle
 
