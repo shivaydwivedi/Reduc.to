@@ -1,6 +1,6 @@
 # Error Model
 
-Status: Approved design. Phase 3 implements the foundation error envelope, validation mapping, unknown-error mapping, and not-found handling.
+Status: Phase 5 implementation. The API returns the foundation error envelope plus MVP auth, link, redirect, and destination-validation errors.
 
 ## Error Envelope
 
@@ -56,7 +56,7 @@ Use stable errors such as:
 
 Login failures should avoid account enumeration.
 
-Logout is idempotent. `POST /api/v1/auth/logout` should not return `AUTHENTICATION_REQUIRED` merely because no valid session exists. It should always clear access, refresh, and CSRF cookies and return success unless the request itself fails CSRF or another non-session precondition.
+Logout is idempotent. `POST /api/v1/auth/logout` should not return `AUTHENTICATION_REQUIRED` merely because no valid session exists. It should always clear access and refresh cookies and return success unless the request itself fails origin validation or another non-session precondition.
 
 ## Authorization and Not-Found Behavior
 
@@ -68,7 +68,6 @@ Use conflict errors for state or uniqueness problems:
 
 - `EMAIL_ALREADY_EXISTS`
 - `ALIAS_UNAVAILABLE`
-- `LINK_ALREADY_DELETED`
 - `TOKEN_REUSE_DETECTED`
 
 ## Rate Limits
@@ -99,7 +98,7 @@ Use safe codes such as:
 
 Do not expose connection strings, stack traces, SQL, Redis keys containing user data, or secret names in production responses.
 
-Phase 4 implementation status: database error classification exists for uniqueness conflicts, foreign-key conflicts, record-not-found cases, dependency unavailability, and unknown database errors. These classifications are internal foundations only; feature-specific API errors such as `EMAIL_ALREADY_EXISTS` and `ALIAS_UNAVAILABLE` are still deferred until their modules exist.
+Phase 5 implementation status: database error classification exists for uniqueness conflicts, foreign-key conflicts, record-not-found cases, dependency unavailability, and unknown database errors. MVP modules map expected feature failures to stable public codes such as `EMAIL_ALREADY_EXISTS`, `ALIAS_UNAVAILABLE`, `LINK_NOT_FOUND`, `LINK_EXPIRED`, and `UNSAFE_DESTINATION`.
 
 ## Request IDs
 
@@ -113,7 +112,7 @@ Production responses contain safe messages only. Development may include additio
 
 - 400: `VALIDATION_FAILED`
 - 401: `AUTHENTICATION_REQUIRED`, `SESSION_EXPIRED`, `INVALID_CREDENTIALS`
-- 403: CSRF failures or authenticated forbidden actions where not-found masking is inappropriate
+- 403: authenticated forbidden actions where not-found masking is inappropriate
 - 404: `LINK_NOT_FOUND`, public missing route
 - 409: uniqueness or state conflicts
 - 410: public expired/deleted links if a distinct public response is chosen
@@ -125,6 +124,6 @@ Production responses contain safe messages only. Development may include additio
 
 Public redirect errors must not expose owner identity, destination URL for disabled/deleted links, or internal state. Missing, disabled, expired, and deleted links may use public-safe messages. API JSON envelope is preferred for API routes; public redirect may return HTML or JSON based on client negotiation.
 
-## Foundation Not-Found Handling
+## Route Not-Found Handling
 
-Phase 3 returns `ROUTE_NOT_FOUND` with HTTP 404 for unknown routes. The public redirect route `/:key` is not implemented yet, so unknown public paths also receive the foundation not-found envelope until the redirect phase replaces that behavior deliberately.
+Unknown API and operational routes return `ROUTE_NOT_FOUND` with HTTP 404. Public short-key misses return `LINK_NOT_FOUND` from the redirect route.

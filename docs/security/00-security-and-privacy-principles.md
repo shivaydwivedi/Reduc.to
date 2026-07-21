@@ -1,6 +1,6 @@
 # Security and Privacy Principles
 
-This document describes intended security and privacy principles. It does not claim that controls are already implemented.
+This document describes security and privacy principles and notes the current Phase 5 implementation status where controls now exist.
 
 ## Security Objectives
 
@@ -19,9 +19,9 @@ Implementation should consider credential attacks, token theft, CSRF, authorizat
 
 ## Authentication Principles
 
-The approved direction is short-lived JWT access tokens and rotating refresh tokens. Access tokens target an approximately 15-minute lifetime. Refresh tokens target an approximately 7-day lifetime and will eventually be stored as hashes in PostgreSQL.
+The implemented MVP uses short-lived JWT access tokens and rotating refresh tokens. Access tokens default to 15 minutes. Refresh tokens default to 7 days and are stored only as server-side hashes in PostgreSQL.
 
-Phase 2 architecture defines refresh sessions separately from issued refresh tokens. Each issued refresh token has its own hashed `RefreshToken` record. Rotation transactionally consumes the current token and creates a successor. Reuse detection revokes the associated session family. Exact signing keys, hashing parameters, and database locking or compare-and-swap implementation remain deferred.
+Phase 5 uses refresh sessions separately from issued refresh tokens. Each issued refresh token has its own hashed `RefreshToken` record. Rotation consumes the current token and creates a successor inside the Prisma transaction boundary. Reuse detection revokes the associated session family.
 
 ## Authorization and Ownership Rules
 
@@ -39,7 +39,7 @@ Cookie attributes must be deliberately designed for the final deployment shape, 
 
 Because authentication uses cookies, CSRF protection must be designed before authentication implementation is considered complete.
 
-Phase 2 architecture selects a combination approach: SameSite cookies where compatible, strict Origin checks for unsafe methods, and a double-submit CSRF token. SameSite alone must not be treated as sufficient for the separate frontend/API deployment model.
+Phase 5 implements the MVP combination of `SameSite=Lax` cookies and strict `Origin` checks for unsafe methods when an `Origin` header is present. Allowed origins come from `CORS_ORIGINS` and `FRONTEND_URL`. Double-submit CSRF tokens remain deferred.
 
 ## Input-Validation Principles
 
@@ -51,7 +51,7 @@ Validation errors should be consistent and should not leak sensitive implementat
 
 Destination URLs must be validated before link creation or update. The implementation should reject unsupported schemes and should consider protections against unsafe internal-network destinations where applicable.
 
-Phase 2 architecture requires `http` and `https` only, rejects embedded credentials and malformed hostnames, and blocks localhost, loopback, private ranges, link-local ranges, and metadata service addresses where detectable. URL validation reduces abuse risk but cannot prove a destination is safe.
+Phase 5 implementation allows `http` and `https` only, rejects embedded credentials, rejects localhost and loopback hosts, and blocks obvious private IPv4 and link-local ranges where detectable. URL validation reduces abuse risk but cannot prove a destination is safe and does not perform server-side fetches.
 
 ## Open-Redirect Considerations
 
@@ -115,7 +115,7 @@ Raw click-event target retention is 90 days. Daily aggregate statistics may be r
 
 Retention enforcement mechanics are deferred to later architecture and implementation phases.
 
-Phase 4 implements database columns and constraints for minimized analytics storage. It does not implement analytics collection, visitor hashing, aggregation jobs, or retention cleanup.
+Phase 5 writes minimized click events on successful redirects and returns total click counts for link responses. It does not implement visitor hashing, aggregation jobs, advanced analytics dimensions, or retention cleanup.
 
 ## Dependency Security
 
@@ -141,11 +141,9 @@ Security review is required before declaring the following areas complete:
 
 ## Explicitly Deferred Security Decisions
 
-- Exact JWT claims and signing configuration.
-- Refresh-token hashing parameters and atomic rotation implementation details.
-- CSRF strategy.
-- Cookie names and attributes.
-- Destination URL allow and deny rules.
+- Issuer/audience claims and clock-skew handling for access tokens.
+- Database-level compare-and-swap or locking hardening for concurrent refresh rotation.
+- Double-submit CSRF token support.
 - Internal-network destination restrictions.
 - Rate-limit thresholds and fallback behavior.
 - Reserved alias list.
