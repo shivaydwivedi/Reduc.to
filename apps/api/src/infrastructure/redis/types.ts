@@ -18,7 +18,7 @@ export type RedisClientLike = {
   off: (event: "error", listener: (error: unknown) => void) => RedisClientLike;
 };
 
-export type RedisDependency<TClient = RedisClientHandle> = {
+export type RedisDependency<TClient = RedisClientHandle | undefined> = {
   start: () => Promise<void>;
   ping: () => Promise<void>;
   close: () => Promise<void>;

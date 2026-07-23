@@ -12,10 +12,11 @@ const portSchema = z.coerce.number().int().min(0).max(65535);
 const envSchema = z.object({
   NODE_ENV: z.enum(nodeEnvironments).default("development"),
   API_HOST: z.string().trim().min(1).optional(),
+  PORT: portSchema.optional(),
   API_PORT: portSchema.optional(),
   LOG_LEVEL: z.enum(logLevels).optional(),
   DATABASE_URL: z.string().trim().url(),
-  REDIS_URL: z.string().trim().url(),
+  REDIS_URL: z.string().trim().url().optional(),
   ACCESS_TOKEN_SECRET: z.string().min(32).optional(),
   REFRESH_TOKEN_SECRET: z.string().min(32).optional(),
   ACCESS_TOKEN_TTL_MINUTES: z.coerce.number().int().positive().max(60).default(15),
@@ -39,7 +40,7 @@ export function loadConfig(rawEnv: RawEnv = process.env): AppConfig {
   const parsed = envSchema.parse(rawEnv);
   const nodeEnv = parsed.NODE_ENV satisfies NodeEnvironment;
   const corsOrigins = parseCorsOrigins(parsed.CORS_ORIGINS);
-  const apiPort = parsed.API_PORT ?? (nodeEnv === "test" ? 0 : 3000);
+  const apiPort = parsed.API_PORT ?? parsed.PORT ?? (nodeEnv === "test" ? 0 : 3000);
 
   if (nodeEnv === "production" && corsOrigins.length === 0) {
     throw new z.ZodError([
@@ -97,7 +98,7 @@ export function loadConfig(rawEnv: RawEnv = process.env): AppConfig {
     apiPort,
     logLevel: parsed.LOG_LEVEL ?? defaultLogLevel(nodeEnv),
     databaseUrl: parsed.DATABASE_URL,
-    redisUrl: parsed.REDIS_URL,
+    ...(parsed.REDIS_URL !== undefined ? { redisUrl: parsed.REDIS_URL } : {}),
     corsOrigins: corsOrigins.length > 0 ? Object.freeze(corsOrigins) : localCorsOrigins,
     readinessTimeoutMs: parsed.READINESS_TIMEOUT_MS,
     shutdownTimeoutMs: parsed.SHUTDOWN_TIMEOUT_MS,

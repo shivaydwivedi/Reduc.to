@@ -3,6 +3,7 @@ import { EventEmitter } from "node:events";
 import { describe, expect, it } from "vitest";
 
 import { createRedisClient } from "../src/infrastructure/redis/redis-client.js";
+import type { AppConfig } from "../src/config/types.js";
 import type { RedisClientLike } from "../src/infrastructure/redis/types.js";
 import { createTestConfig } from "./helpers.js";
 
@@ -36,6 +37,16 @@ class FakeRedisClient extends EventEmitter implements RedisClientLike {
 }
 
 describe("createRedisClient", () => {
+  it("is a no-op dependency when Redis URL is omitted", async () => {
+    const { redisUrl: _redisUrl, ...configWithoutRedis } = createTestConfig();
+    const redis = createRedisClient(configWithoutRedis as AppConfig);
+
+    await expect(redis.start()).resolves.toBeUndefined();
+    await expect(redis.ping()).resolves.toBeUndefined();
+    await expect(redis.close()).resolves.toBeUndefined();
+    expect(redis.getClient()).toBeUndefined();
+  });
+
   it("handles Redis error events with safe structured context and removes the listener on close", async () => {
     const fakeClient = new FakeRedisClient();
     const reports: unknown[] = [];

@@ -14,6 +14,10 @@
   ],
   "scripts": {
     "dev:api": "npm run dev --workspace=@reduc-to/api",
+    "dev:web": "npm run dev --workspace=@reduc-to/web",
+    "build": "npm run build --workspaces --if-present",
+    "build:api": "npm run build --workspace=@reduc-to/api",
+    "build:web": "npm run build --workspace=@reduc-to/web",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "lint": "eslint .",
@@ -22,8 +26,10 @@
     "prisma:migrate:deploy": "npm run prisma:migrate:deploy --workspace=@reduc-to/api",
     "prisma:migrate:dev": "npm run prisma:migrate:dev --workspace=@reduc-to/api",
     "prisma:validate": "npm run prisma:validate --workspace=@reduc-to/api",
+    "start:api": "npm run start --workspace=@reduc-to/api",
     "test": "npm run test --workspaces --if-present",
     "test:api": "npm run test --workspace=@reduc-to/api",
+    "test:web": "npm run test --workspace=@reduc-to/web",
     "typecheck": "npm run typecheck --workspaces",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run test"
   },

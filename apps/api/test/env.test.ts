@@ -79,10 +79,11 @@ describe("loadConfig", () => {
     expect(() => loadConfig(env)).toThrow(ZodError);
   });
 
-  it("requires REDIS_URL", () => {
+  it("allows Redis URL to be omitted for MVP deployment", () => {
     const { REDIS_URL: _redisUrl, ...env } = validEnv;
+    const config = loadConfig(env);
 
-    expect(() => loadConfig(env)).toThrow(ZodError);
+    expect(config.redisUrl).toBeUndefined();
   });
 
   it("requires explicit CORS origins in production", () => {

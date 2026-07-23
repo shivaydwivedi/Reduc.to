@@ -10,7 +10,7 @@ export type AppConfig = Readonly<{
   apiPort: number;
   logLevel: LogLevel;
   databaseUrl: string;
-  redisUrl: string;
+  redisUrl?: string;
   corsOrigins: readonly string[];
   readinessTimeoutMs: number;
   shutdownTimeoutMs: number;

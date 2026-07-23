@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "npm run prisma:generate && tsc -p tsconfig.build.json",
     "dev": "tsx watch src/server.ts",
     "lint": "eslint .",
     "prisma:format": "prisma format --schema prisma/schema.prisma",
@@ -12,9 +13,9 @@
     "prisma:migrate:dev": "prisma migrate dev --config prisma.config.ts",
     "prisma:status": "prisma migrate status --config prisma.config.ts",
     "prisma:validate": "prisma validate --schema prisma/schema.prisma",
-    "start": "tsx src/server.ts",
-    "test": "vitest run --environment node --test-timeout 10000 test",
-    "test:watch": "vitest --environment node --test-timeout 10000 test",
+    "start": "node dist/server.js",
+    "test": "vitest run --environment node --test-timeout 10000 --no-file-parallelism test",
+    "test:watch": "vitest --environment node --test-timeout 10000 --no-file-parallelism test",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

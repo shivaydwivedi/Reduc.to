@@ -4,7 +4,23 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "build": "vite build",
+    "dev": "vite --host 0.0.0.0",
     "lint": "eslint .",
+    "test": "vitest run --environment jsdom",
+    "test:watch": "vitest --environment jsdom",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "19.2.8",
+    "react-dom": "19.2.8"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "@vitejs/plugin-react": "6.0.3",
+    "jsdom": "29.1.1",
+    "vite": "8.1.5",
+    "vitest": "4.1.10"
   }
 }
