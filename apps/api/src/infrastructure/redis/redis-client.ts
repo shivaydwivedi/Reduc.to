@@ -18,6 +18,23 @@ export function createRedisClient(
     reportError?: RedisErrorReporter;
   } = {}
 ): RedisDependency<RedisClientLike> {
+  if (config.redisUrl === undefined) {
+    return {
+      async start() {
+        return undefined;
+      },
+      async ping() {
+        return undefined;
+      },
+      async close() {
+        return undefined;
+      },
+      getClient() {
+        return undefined as unknown as RedisClientLike;
+      }
+    };
+  }
+
   const createClientImpl = options.createClient ?? (createClient as RedisClientFactory);
   const reportError = options.reportError ?? (() => undefined);
   const client = createClientImpl({

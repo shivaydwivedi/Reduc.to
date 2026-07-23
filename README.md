@@ -1,27 +1,32 @@
 # Reduc.to
 
-Reduc.to is a URL shortening and privacy-aware analytics platform. This branch implements the Phase 5 backend MVP: cookie-based authentication, registered-user link management, public redirects, and basic click-count tracking.
+Reduc.to is a deployable MVP for registered-user URL shortening with privacy-aware basic click tracking. The Phase 6 branch includes the Fastify API, React/Vite frontend, PostgreSQL persistence, cookie authentication, link management, public redirects, and production-oriented build scripts.
 
 ## Current Status
 
-Current phase: Phase 5, Core Backend MVP.
+Current phase: Phase 6, Frontend Integration and Deployment Preparation.
 
-This phase adds deployable Fastify API behavior on top of the existing Prisma/PostgreSQL foundation. The frontend dashboard, Redis redirect caching, advanced analytics, daily aggregation jobs, administrator features, billing, teams, custom domains, and email flows are not implemented.
+Implemented MVP features:
 
-## First-Release Direction
+- Register, log in, refresh access sessions, and log out with HTTP-only cookies.
+- Protected React dashboard with current account details.
+- Create short links with generated keys or optional custom aliases.
+- List owned links, copy short URLs, edit destination/title/expiry, enable, disable, and delete.
+- Public `GET /:key` redirects with basic click-event writes.
+- Total click counts on link responses.
 
-The first release is planned to support registered users who create and manage short links, visitors who open short links, and privacy-aware analytics for link owners. Anonymous link creation and administrator functionality are excluded from the first release.
+Not implemented: Redis redirect caching, advanced analytics, charts, daily aggregation, password reset, email verification, admin features, teams, billing, custom domains, QR codes, CI/CD, social login, and account deletion.
 
-## Planned Technology Stack
+## Architecture
 
-- Monorepo with npm workspaces
-- TypeScript
-- Fastify API
-- React and Vite frontend in a later phase
-- PostgreSQL with Prisma
-- Redis for health checks now; redirect caching and rate-limiting support remain deferred
-- ESLint and Prettier for foundation quality checks
-- Docker Compose for local PostgreSQL and Redis
+```text
+Browser
+  -> React frontend
+  -> Fastify API
+  -> PostgreSQL
+```
+
+Redis infrastructure remains in the repository, but Redis is optional for the MVP runtime. Redirect caching and rate limiting are deferred.
 
 ## Repository Structure
 
@@ -46,11 +51,11 @@ The first release is planned to support registered users who create and manage s
 
 - Node.js 22.11.0 or newer
 - npm 10.9.0 or newer
-- Docker with Docker Compose v2
+- Docker with Docker Compose v2 when running local PostgreSQL
 
-Docker is not currently installed on the owner's machine. PostgreSQL and Redis are defined for local development, but the Prisma migration has not been applied to a live local PostgreSQL database in this workspace.
+Docker is not currently installed on the owner's machine, so live local PostgreSQL migration testing has not been performed in this workspace.
 
-## Foundation Setup
+## Environment Setup
 
 Install dependencies:
 
@@ -58,130 +63,160 @@ Install dependencies:
 npm install
 ```
 
-Start local PostgreSQL and Redis:
+Create local environment files from examples. Do not commit real `.env` files.
+
+Backend environment starts from:
+
+```text
+.env.example
+```
+
+Frontend environment starts from:
+
+```text
+apps/web/.env.example
+```
+
+Frontend variable:
+
+```bash
+VITE_API_BASE_URL=http://localhost:3000
+```
+
+Backend deployment variables:
+
+- `NODE_ENV`
+- `PORT` or `API_PORT`
+- `DATABASE_URL`
+- `REDIS_URL` optional
+- `CORS_ORIGINS`
+- `FRONTEND_URL`
+- `PUBLIC_BASE_URL`
+- `ACCESS_TOKEN_SECRET`
+- `REFRESH_TOKEN_SECRET`
+- `ACCESS_TOKEN_TTL_MINUTES`
+- `REFRESH_TOKEN_TTL_DAYS`
+- `COOKIE_SECURE`
+- `COOKIE_SAME_SITE`
+- `COOKIE_DOMAIN` optional
+
+For cross-site deployments such as Vercel frontend plus Render API, use `COOKIE_SAME_SITE=none` with `COOKIE_SECURE=true`, set `FRONTEND_URL` to the frontend origin, and include that origin in `CORS_ORIGINS`.
+
+## Local Development
+
+Start PostgreSQL locally when Docker is available:
 
 ```bash
 docker compose up -d
 ```
 
-Create a local `.env` from `.env.example` only when running the API locally. Do not commit `.env`.
-
-Before running the API against PostgreSQL, apply the Prisma migration to the target database:
+Apply database migrations before running against PostgreSQL:
 
 ```bash
 npm run prisma:migrate:deploy
 ```
 
-Run the API in development mode:
+Run the API:
 
 ```bash
 npm run dev:api
 ```
 
-Run API tests:
+Run the frontend:
 
 ```bash
-npm run test:api
+npm run dev:web
 ```
 
-The API exposes:
+The frontend uses cookie credentials and expects `VITE_API_BASE_URL` to point at the API origin.
 
-- `GET /health`: process liveness only.
-- `GET /ready`: dependency readiness using PostgreSQL and Redis checks.
-- `POST /api/v1/auth/register`: register a user and create a cookie session.
-- `POST /api/v1/auth/login`: authenticate and create a cookie session.
-- `POST /api/v1/auth/refresh`: rotate the refresh token and issue a new access token.
-- `POST /api/v1/auth/logout`: idempotently revoke the current session and clear cookies.
-- `GET /api/v1/auth/me`: return the current authenticated user.
-- `POST /api/v1/links`: create a short link with an optional immutable alias.
-- `GET /api/v1/links`: list the current user's links with total click counts.
-- `GET /api/v1/links/:linkId`: get one owned link.
-- `PATCH /api/v1/links/:linkId`: update destination URL, title, or expiry.
-- `POST /api/v1/links/:linkId/enable`: enable an owned link.
-- `POST /api/v1/links/:linkId/disable`: disable an owned link.
-- `DELETE /api/v1/links/:linkId`: soft delete an owned link.
-- `GET /:key`: redirect a public short key using 302 by default, or 301 for permanent links stored in the database.
+## Production Build and Start
 
-The test suite exercises the backend MVP with fake Prisma boundaries; it does not require Docker or live PostgreSQL.
-
-Authentication uses short-lived JWT access cookies and rotating refresh cookies. Cookies are `HttpOnly`, `Secure` in production by default, and configurable with `COOKIE_SAME_SITE=lax` or `COOKIE_SAME_SITE=none`; `none` requires `COOKIE_SECURE=true` for cross-site deployments. Unsafe methods with an `Origin` header are rejected unless the origin matches configured CORS/frontend origins.
-
-Link creation and updates validate destination URLs without fetching them. The MVP allows `http` and `https`, rejects embedded credentials, localhost, loopback, and obvious private IPv4 ranges, and preserves paths, query strings, and fragments.
-
-Redirects write one minimized click event per successful redirect where possible. Analytics are limited to total click counts returned with link responses; charts, daily aggregation, approximate uniques, visitor hashing, queues, workers, and Redis redirect caching are deferred.
-
-Prisma schema location:
-
-```text
-apps/api/prisma/schema.prisma
-```
-
-Prisma commands that do not require a live PostgreSQL database:
+Generate Prisma Client:
 
 ```bash
-npm run prisma:format
+npm run prisma:generate
+```
+
+Build everything:
+
+```bash
+npm run build
+```
+
+Build individually:
+
+```bash
+npm run build:api
+npm run build:web
+```
+
+Apply migrations on the deployment database:
+
+```bash
+npm run prisma:migrate:deploy
+```
+
+Start the compiled API:
+
+```bash
+npm run start:api
+```
+
+The API start command runs compiled JavaScript from `apps/api/dist` and does not require `tsx` in production. Migrations are not run automatically by the application process.
+
+## API Surface
+
+Operational:
+
+- `GET /health`
+- `GET /ready`
+
+Auth:
+
+- `POST /api/v1/auth/register`
+- `POST /api/v1/auth/login`
+- `POST /api/v1/auth/refresh`
+- `POST /api/v1/auth/logout`
+- `GET /api/v1/auth/me`
+
+Links:
+
+- `POST /api/v1/links`
+- `GET /api/v1/links`
+- `GET /api/v1/links/:linkId`
+- `PATCH /api/v1/links/:linkId`
+- `POST /api/v1/links/:linkId/enable`
+- `POST /api/v1/links/:linkId/disable`
+- `DELETE /api/v1/links/:linkId`
+
+Public redirect:
+
+- `GET /:key`
+
+## Quality Checks
+
+```bash
+npm run format
+npm run format:check
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+npm run check
 npm run prisma:validate
 npm run prisma:generate
 ```
 
-Prisma commands that require a live PostgreSQL database configured by `DATABASE_URL`:
+`npm run check` runs format check, lint, typecheck, and tests.
 
-```bash
-npm run prisma:migrate:dev
-npm run prisma:migrate:deploy
-```
+## Known Limitations
 
-The initial migration SQL is present for review but has not been applied locally because Docker/PostgreSQL is unavailable.
-
-Stop local infrastructure:
-
-```bash
-docker compose down
-```
-
-Remove local infrastructure volumes when you intentionally want a fresh database and Redis store:
-
-```bash
-docker compose down -v
-```
-
-## Foundation Checks
-
-Format files:
-
-```bash
-npm run format
-```
-
-Check formatting:
-
-```bash
-npm run format:check
-```
-
-Run ESLint:
-
-```bash
-npm run lint
-```
-
-Run TypeScript checks across workspaces:
-
-```bash
-npm run typecheck
-```
-
-Run all foundation checks:
-
-```bash
-npm run check
-```
-
-Validate Docker Compose configuration:
-
-```bash
-docker compose config
-```
+- No live PostgreSQL migration was applied in this workspace.
+- Redis caching is not implemented and Redis is optional for MVP startup.
+- Click tracking is basic total-count tracking only.
+- No advanced analytics, charts, daily aggregation, visitor hashing, or queues.
+- No frontend deployment, backend deployment, CI, or Docker deployment automation has been performed.
 
 ## Documentation
 
@@ -203,15 +238,6 @@ docker compose config
 - [Error model](docs/api/02-error-model.md)
 - [Security and privacy principles](docs/security/00-security-and-privacy-principles.md)
 - [Agent instructions](AGENTS.md)
-
-## Development Workflow
-
-1. Read `AGENTS.md` and the relevant planning documents.
-2. Confirm the current phase and approved task.
-3. Keep changes focused.
-4. Run the relevant checks.
-5. Report commands and results accurately.
-6. Do not commit, push, merge, or deploy without explicit approval.
 
 ## License
 
