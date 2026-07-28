@@ -8,10 +8,10 @@
  *
  * 🟢 You can import this file directly.
  */
-export type * from './models/User.ts'
-export type * from './models/Link.ts'
-export type * from './models/RefreshSession.ts'
-export type * from './models/RefreshToken.ts'
-export type * from './models/ClickEvent.ts'
-export type * from './models/DailyLinkStatistic.ts'
-export type * from './commonInputTypes.ts'
+export type * from './models/User.js'
+export type * from './models/Link.js'
+export type * from './models/RefreshSession.js'
+export type * from './models/RefreshToken.js'
+export type * from './models/ClickEvent.js'
+export type * from './models/DailyLinkStatistic.js'
+export type * from './commonInputTypes.js'
