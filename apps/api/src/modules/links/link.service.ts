@@ -20,6 +20,7 @@ export async function createLink(input: {
 }): Promise<LinkResponse> {
   const now = new Date();
   const key = await resolveKey(input.database, input.alias);
+  const expiresAt = parseFutureExpiry(input.expiresAt);
   const link = await input.database.link.create({
     data: {
       id: generateUuidV7(now),
@@ -29,10 +30,7 @@ export async function createLink(input: {
       destinationUrl: validateDestinationUrl(input.destinationUrl),
       title: input.title ?? null,
       isActive: true,
-      expiresAt:
-        input.expiresAt === null || input.expiresAt === undefined
-          ? null
-          : new Date(input.expiresAt),
+      expiresAt: expiresAt ?? null,
       redirectType: RedirectType.TEMPORARY_302
     }
   });
@@ -98,7 +96,7 @@ export async function updateOwnedLink(input: {
     data.title = input.title;
   }
   if (input.expiresAt !== undefined) {
-    data.expiresAt = input.expiresAt === null ? null : new Date(input.expiresAt);
+    data.expiresAt = parseFutureExpiry(input.expiresAt);
   }
 
   const link = await input.database.link.update({ where: { id: input.linkId }, data });
@@ -203,4 +201,21 @@ function aliasUnavailable(): AppError {
     message: "The requested alias is unavailable.",
     statusCode: 409
   });
+}
+
+function parseFutureExpiry(value: string | null | undefined): Date | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+
+  const expiresAt = new Date(value);
+  if (!Number.isFinite(expiresAt.getTime()) || expiresAt <= new Date()) {
+    throw new AppError({
+      code: errorCodes.INVALID_EXPIRY,
+      message: "Expiry must be in the future.",
+      statusCode: 400
+    });
+  }
+
+  return expiresAt;
 }

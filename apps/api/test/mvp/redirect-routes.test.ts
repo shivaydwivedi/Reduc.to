@@ -73,15 +73,12 @@ describe("redirect MVP routes", () => {
   });
 
   it("returns gone for expired links", async () => {
-    const { app, cookie } = await buildRedirectApp();
+    const { app, database, cookie } = await buildRedirectApp();
     const created = await createLink(app, cookie, "expired", "https://example.com/expired");
 
-    await app.inject({
-      method: "PATCH",
-      url: `/api/v1/links/${created.json().link.id}`,
-      headers: { cookie },
-      payload: { expiresAt: "2020-01-01T00:00:00.000Z" }
-    });
+    const link = database.__store.links.find((item) => item.id === created.json().link.id);
+    expect(link).toBeDefined();
+    link!.expiresAt = new Date("2020-01-01T00:00:00.000Z");
     const response = await app.inject({ method: "GET", url: "/expired" });
 
     expect(response.statusCode).toBe(410);

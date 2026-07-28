@@ -39,6 +39,40 @@ describe("link MVP routes", () => {
     await app.close();
   });
 
+  it("rejects past expiry on create with INVALID_EXPIRY", async () => {
+    const app = await buildTestApp();
+    const auth = await register(app);
+
+    const response = await createLink(app, auth, {
+      destinationUrl: "https://example.com/a",
+      expiresAt: "2000-01-01T00:00:00.000Z"
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json().error).toMatchObject({
+      code: errorCodes.INVALID_EXPIRY,
+      message: "Expiry must be in the future."
+    });
+
+    await app.close();
+  });
+
+  it("accepts future expiry on create", async () => {
+    const app = await buildTestApp();
+    const auth = await register(app);
+    const expiresAt = "2099-01-01T00:00:00.000Z";
+
+    const response = await createLink(app, auth, {
+      destinationUrl: "https://example.com/a",
+      expiresAt
+    });
+
+    expect(response.statusCode).toBe(201);
+    expect(response.json().link.expiresAt).toBe(expiresAt);
+
+    await app.close();
+  });
+
   it("lists only the authenticated owner's links", async () => {
     const app = await buildTestApp();
     const owner = await register(app, "owner@example.com");
@@ -106,6 +140,32 @@ describe("link MVP routes", () => {
       destinationUrl: "https://example.com/updated",
       title: "Updated",
       expiresAt: null
+    });
+
+    await app.close();
+  });
+
+  it("rejects past expiry on update with INVALID_EXPIRY", async () => {
+    const app = await buildTestApp();
+    const auth = await register(app);
+    const created = await createLink(app, auth, {
+      destinationUrl: "https://example.com/a",
+      alias: "expiry-edit"
+    });
+
+    const response = await app.inject({
+      method: "PATCH",
+      url: `/api/v1/links/${created.json().link.id}`,
+      headers: { cookie: auth },
+      payload: {
+        expiresAt: "2000-01-01T00:00:00.000Z"
+      }
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json().error).toMatchObject({
+      code: errorCodes.INVALID_EXPIRY,
+      message: "Expiry must be in the future."
     });
 
     await app.close();
