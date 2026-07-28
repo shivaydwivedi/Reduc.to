@@ -47,6 +47,8 @@ type RequestOptions = {
   retryOnUnauthorized?: boolean;
 };
 
+const defaultFetch: typeof fetch = (...args) => globalThis.fetch(...args);
+
 export class ApiClientError extends Error {
   constructor(
     message: string,
@@ -60,7 +62,7 @@ export class ApiClientError extends Error {
 export class ApiClient {
   constructor(
     private readonly baseUrl = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:3000",
-    private readonly fetchImpl: typeof fetch = fetch
+    private readonly fetchImpl: typeof fetch = defaultFetch
   ) {}
 
   register(input: {

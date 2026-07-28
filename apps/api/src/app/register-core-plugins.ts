@@ -19,6 +19,7 @@ export async function registerCorePlugins(app: FastifyInstance, config: AppConfi
 
       callback(null, config.corsOrigins.includes(origin));
     },
+    methods: ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["content-type", requestIdHeader],
     exposedHeaders: [requestIdHeader]
   });
