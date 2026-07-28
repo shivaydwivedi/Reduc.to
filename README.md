@@ -1,6 +1,6 @@
 # Reduc.to
 
-**A production-deployed full-stack URL-shortening platform built with React, Fastify, Prisma, and PostgreSQL.**
+> **A production-deployed full-stack URL-shortening platform built with React, Fastify, Prisma, and PostgreSQL.**
 
 Reduc.to is a TypeScript npm-workspaces monorepo for registered-user URL shortening, secure cookie-based authentication, link management, public redirects, and privacy-aware click tracking. The project is designed to be read by recruiters and engineers as a complete full-stack portfolio system: it includes a deployed frontend and API, database migrations, architecture documentation, security notes, and automated tests across the API and web app.
 
@@ -13,17 +13,24 @@ Reduc.to is a TypeScript npm-workspaces monorepo for registered-user URL shorten
 ![Tests](https://img.shields.io/badge/tests-94%20passing-brightgreen)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
-**Links:** [Live Application](https://reduc-to-web.vercel.app) | [API](https://reduc-to.onrender.com) | [Health Check](https://reduc-to.onrender.com/health) | [Readiness](https://reduc-to.onrender.com/ready) | [Repository](https://github.com/shivaydwivedi/Reduc.to)
+**Live Links:** 
+| Resource | URL |
+| --- | --- |
+| Live Application | https://reduc-to-web.vercel.app|
+| API | https://reduc-to.onrender.com |
+| Health Check | https://reduc-to.onrender.com/health |
+| Readiness | https://reduc-to.onrender.com/ready |
+| Repository| https://github.com/shivaydwivedi/Reduc.to |
 
 ## Project Preview
 
 Screenshots are planned for `docs/screenshots/` so the README can stay stable as the UI evolves.
 
-> Screenshot files still to add:
->
-> - `docs/screenshots/dashboard.png`
-> - `docs/screenshots/create-link.png`
-> - `docs/screenshots/edit-link.png`
+## Screenshot files still to add:
+
+ - `docs/screenshots/dashboard.png`
+ - `docs/screenshots/create-link.png`
+ - `docs/screenshots/edit-link.png`
 
 ## Overview
 
