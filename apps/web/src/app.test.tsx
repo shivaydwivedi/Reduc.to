@@ -2,7 +2,7 @@ import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { App } from "./app.js";
+import { App, toLocalDateTime } from "./app.js";
 import type { ApiClient, Link, SafeUser } from "./api-client.js";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
@@ -83,6 +83,62 @@ describe("App", () => {
     expect(host.textContent).toContain("https://reduc.to/launch");
   });
 
+  it("omits empty expiry when creating a link", async () => {
+    const createLink = vi.fn().mockResolvedValue({ link });
+    await render(<App client={fakeClient({ createLink })} initialPath="/dashboard" />);
+
+    setInput("Destination URL", "https://example.com/launch");
+    setInput("Expiry", "");
+    await submit(".tool-panel");
+
+    expect(createLink).toHaveBeenCalledWith({ destinationUrl: "https://example.com/launch" });
+  });
+
+  it("blocks past create expiry before calling the API", async () => {
+    const createLink = vi.fn().mockResolvedValue({ link });
+    await render(<App client={fakeClient({ createLink })} initialPath="/dashboard" />);
+
+    setInput("Destination URL", "https://example.com/launch");
+    setInput("Expiry", "2000-01-01T00:00");
+    await submit(".tool-panel");
+
+    expect(createLink).not.toHaveBeenCalled();
+    expect(host.textContent).toContain("Expiry must be in the future.");
+  });
+
+  it("resets expiry state after a successful create", async () => {
+    const createLink = vi.fn().mockResolvedValue({ link });
+    await render(<App client={fakeClient({ createLink })} initialPath="/dashboard" />);
+
+    setInput("Destination URL", "https://example.com/launch");
+    setInput("Expiry", "2099-01-01T09:30");
+    await submit(".tool-panel");
+
+    const expiry = inputForLabel("Expiry");
+    expect(expiry.value).toBe("");
+    expect(createLink).toHaveBeenCalledWith({
+      destinationUrl: "https://example.com/launch",
+      expiresAt: new Date("2099-01-01T09:30").toISOString()
+    });
+  });
+
+  it("formats ISO expiry values for datetime-local edit fields", async () => {
+    const expiringLink = { ...link, expiresAt: "2099-07-28T11:04:00.000Z" };
+    await render(
+      <App
+        client={fakeClient({
+          listLinks: () => Promise.resolve({ links: [expiringLink], total: 1, page: 1, limit: 20 })
+        })}
+        initialPath="/dashboard"
+      />
+    );
+
+    await clickButton("Edit");
+
+    const expiry = inputForLabel("Expiry", ".edit-panel");
+    expect(expiry.value).toBe(toLocalDateTime(expiringLink.expiresAt));
+  });
+
   it("handles link actions from the dashboard", async () => {
     const disabled = { ...link, isActive: false };
     const disableLink = vi.fn().mockResolvedValue({ link: disabled });
@@ -143,7 +199,15 @@ async function submit(selector: string): Promise<void> {
 }
 
 function setInput(labelText: string, value: string): void {
-  const label = [...host.querySelectorAll("label")].find((item) =>
+  setInputIn(labelText, value);
+}
+
+function setInputIn(labelText: string, value: string, containerSelector?: string): void {
+  const container = containerSelector === undefined ? host : host.querySelector(containerSelector);
+  if (container === null) {
+    throw new Error(`Missing container ${containerSelector}`);
+  }
+  const label = [...container.querySelectorAll("label")].find((item) =>
     item.textContent?.includes(labelText)
   );
   const input = label?.querySelector("input");
@@ -155,6 +219,21 @@ function setInput(labelText: string, value: string): void {
     setter?.call(input, value);
     input.dispatchEvent(new Event("input", { bubbles: true }));
   });
+}
+
+function inputForLabel(labelText: string, containerSelector?: string): HTMLInputElement {
+  const container = containerSelector === undefined ? host : host.querySelector(containerSelector);
+  if (container === null) {
+    throw new Error(`Missing container ${containerSelector}`);
+  }
+  const label = [...container.querySelectorAll("label")].find((item) =>
+    item.textContent?.includes(labelText)
+  );
+  const input = label?.querySelector("input");
+  if (input === undefined || input === null) {
+    throw new Error(`Missing input ${labelText}`);
+  }
+  return input;
 }
 
 async function clickButton(text: string): Promise<void> {

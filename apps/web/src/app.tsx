@@ -21,6 +21,13 @@ type SessionState =
   | { status: "anonymous"; user: null }
   | { status: "authenticated"; user: SafeUser };
 
+type CreateLinkFormState = {
+  destinationUrl: string;
+  alias?: string;
+  title?: string;
+  expiresAt: string;
+};
+
 export function App({ client = apiClient, initialPath }: AppProps): ReactElement {
   const [route, setRoute] = useState<Route>(initialPath ?? currentRoute());
   const [session, setSession] = useState<SessionState>({ status: "loading", user: null });
@@ -393,7 +400,7 @@ function CreateLinkForm({
   client: ApiClient;
   onCreated: (link: Link) => void;
 }): ReactElement {
-  const [input, setInput] = useState<CreateLinkInput>({ destinationUrl: "" });
+  const [input, setInput] = useState<CreateLinkFormState>({ destinationUrl: "", expiresAt: "" });
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -407,10 +414,21 @@ function CreateLinkForm({
       setError("Destination must start with http:// or https://.");
       return;
     }
+    const expiresAt = toFutureExpiryIso(input.expiresAt);
+    if (expiresAt === undefined) {
+      setError("Expiry must be in the future.");
+      return;
+    }
     setIsSubmitting(true);
     try {
-      const { link } = await client.createLink(input);
-      setInput({ destinationUrl: "" });
+      const payload: CreateLinkInput = {
+        destinationUrl: input.destinationUrl,
+        ...(input.alias !== undefined ? { alias: input.alias } : {}),
+        ...(input.title !== undefined ? { title: input.title } : {}),
+        ...(expiresAt !== null ? { expiresAt } : {})
+      };
+      const { link } = await client.createLink(payload);
+      setInput({ destinationUrl: "", expiresAt: "" });
       onCreated(link);
     } catch (caught) {
       setError(messageFromError(caught));
@@ -452,12 +470,11 @@ function CreateLinkForm({
           Expiry
           <input
             type="datetime-local"
-            value={input.expiresAt ?? ""}
+            value={input.expiresAt}
             onChange={(event) =>
               setInput({
                 ...input,
-                expiresAt:
-                  event.target.value === "" ? null : new Date(event.target.value).toISOString()
+                expiresAt: event.target.value
               })
             }
           />
@@ -501,11 +518,16 @@ function LinkCard({
   const save = async (event: FormEvent): Promise<void> => {
     event.preventDefault();
     setError("");
+    const expiresAt = toFutureExpiryIso(draft.expiresAt);
+    if (expiresAt === undefined) {
+      setError("Expiry must be in the future.");
+      return;
+    }
     try {
       const { link: updated } = await client.updateLink(link.id, {
         title: draft.title === "" ? null : draft.title,
         destinationUrl: draft.destinationUrl,
-        expiresAt: draft.expiresAt === "" ? null : new Date(draft.expiresAt).toISOString()
+        expiresAt
       });
       onChanged(updated);
       setIsEditing(false);
@@ -632,9 +654,32 @@ function formatDate(value: string): string {
   );
 }
 
-function toLocalDateTime(value: string | null): string {
-  if (value === null) {
+export function toLocalDateTime(value: string | null | undefined): string {
+  if (value === null || value === undefined || value === "") {
     return "";
   }
-  return new Date(value).toISOString().slice(0, 16);
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) {
+    return "";
+  }
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+function toFutureExpiryIso(value: string): string | null | undefined {
+  if (value === "") {
+    return null;
+  }
+
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime()) || date <= new Date()) {
+    return undefined;
+  }
+
+  return date.toISOString();
 }
